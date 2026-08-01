@@ -60,54 +60,75 @@ input[type="number"] { -moz-appearance: textfield; }
 
 
 /* ==========================================
-   印刷用スタイル（Safari・Chrome両対応版）
+   印刷用スタイル（究極のSafari対策版）
    ========================================== */
 @media print {
-  /* ページ全体の余白調整 */
+  /* ページ設定 */
   @page {
     size: A4 portrait;
     margin: 8mm;
   }
 
-  /* Safariでの高さ過剰計算を防ぐため、全要素の高さを解放する */
+  /* Safariの高さ制限・クリッピング（見切れ）を全要素で強制解除 */
+  * {
+    overflow: visible !important;
+  }
+
   html, body {
     height: auto !important;
+    max-height: none !important;
     min-height: 0 !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    position: static !important;
     background: #fff !important;
     color: #000 !important;
-    font-size: 10pt;
   }
 
-  /* 画面上のボタンや操作エリアは印刷しない */
-  .no-print, button, input, select, header, nav {
-    display: none !important;
-  }
-
-  /* Safariで高さ崩れを起こす原因となるFlexboxを印刷時のみ解除する */
-  .container, .main-layout, .menu-wrapper {
+  /* 画面用のレイアウト枠（Flex等）を徹底的にブロック化してバグを防ぐ */
+  .container, .main-layout, .menu-wrapper, body > div {
     display: block !important;
-    width: 100% !important;
     height: auto !important;
+    max-height: none !important;
+    position: static !important;
+    width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  /* テーブルやブロックの途中で不自然にページが切れるのを防ぐ */
-  table, .menu-block, .section-card {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
+  /* UI要素を消去 */
+  .no-print, button, input[type="file"], header, nav {
+    display: none !important;
   }
 
-  /* 2分割レイアウトを維持するための設定 */
+  /* SafariのFlexboxバグを回避し、floatで強制的に2分割を作る */
   .two-column-print {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
+    display: block !important;
+    width: 100% !important;
   }
   
   .two-column-print > div {
+    float: left !important;
     width: 48% !important;
+    margin-right: 4% !important;
+  }
+  
+  .two-column-print > div:last-child {
+    margin-right: 0 !important;
+  }
+  
+  /* floatの解除（テーブルの崩れ防止） */
+  .two-column-print::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+
+  /* 途中での不自然な改ページを防ぐ */
+  table, .menu-block, .section-card, tr, td, th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }
