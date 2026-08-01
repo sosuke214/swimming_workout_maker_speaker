@@ -57,21 +57,57 @@ input[type="number"] { -moz-appearance: textfield; }
 .countdown-item input[type="date"] { border: none; font-size: 9px; width: 75px; background: transparent; }
 .days-left { font-size: 11px; font-weight: bold; color: #d32f2f; white-space: nowrap; }
 
+
+
+/* ==========================================
+   印刷用スタイル（Safari・Chrome両対応版）
+   ========================================== */
 @media print {
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  @page { size: A4 portrait; margin: 0; }
-  body { margin: 0; padding: 0; }
-  
-  .print-container, #print-clone {
-    height: 148.5mm; width: 210mm; box-sizing: border-box; padding: 4mm 6mm; page-break-inside: avoid; overflow: hidden;
+  /* ページ全体の余白調整 */
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  /* Safariでの高さ過剰計算を防ぐため、全要素の高さを解放する */
+  html, body {
+    height: auto !important;
+    min-height: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 10pt;
+  }
+
+  /* 画面上のボタンや操作エリアは印刷しない */
+  .no-print, button, input, select, header, nav {
+    display: none !important;
+  }
+
+  /* Safariで高さ崩れを起こす原因となるFlexboxを印刷時のみ解除する */
+  .container, .main-layout, .menu-wrapper {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* テーブルやブロックの途中で不自然にページが切れるのを防ぐ */
+  table, .menu-block, .section-card {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* 2分割レイアウトを維持するための設定 */
+  .two-column-print {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
   
-  #print-clone { border-top: 1px dashed #999; }
-  .no-print, button, input[type="file"] { display: none !important; }
-  
-  select { -webkit-appearance: none; appearance: none; border: none !important; background: transparent !important; }
-  input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { display: none !important; -webkit-appearance: none; }
-  input[type="date"] { -webkit-appearance: none; appearance: none; }
-
-  input[data-rest="00:00"], input[data-rest=""] { visibility: hidden !important; }
+  .two-column-print > div {
+    width: 48% !important;
+  }
 }
