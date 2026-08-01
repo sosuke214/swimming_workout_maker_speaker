@@ -185,7 +185,7 @@ function renderTable() {
           let rowSingleDuration = 0;
           if (row.type === 'swim') {
               const rep = Number(row.rep) || 1;
-              const restSec = timeToSeconds(row.rest); 
+              const restSec = timeToSeconds(row.rest); // 各行のレスト
               
               if (row.isVarInterval && row.varIntervals) {
                   rowSingleDuration = row.varIntervals.reduce((sum, t) => sum + timeToSeconds(t), 0) + restSec;
@@ -367,63 +367,22 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   a.click();
 });
 
-// === PDF出力処理を修正 ===
 document.getElementById('pdfBtn').addEventListener('click', () => {
   const filename = getFileName();
   if(!filename) return;
   
-  // Safariかどうかを判定
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  
-  if (isSafari) {
-    // Safari用の根本的に違うアプローチ（html2pdf.jsによる画像ベースのPDF生成）
-    const container = document.querySelector('.print-container');
-    
-    // 入力されている値をHTML属性に反映させる (画像化の際にテキストボックスが空になるのを防ぐため)
-    container.querySelectorAll('input, textarea, select').forEach(el => {
-      if (el.tagName === 'TEXTAREA') {
-        el.innerHTML = el.value;
-      } else if (el.tagName === 'SELECT') {
-        Array.from(el.options).forEach(opt => {
-          if (opt.value === el.value) opt.setAttribute('selected', 'selected');
-          else opt.removeAttribute('selected');
-        });
-      } else {
-        el.setAttribute('value', el.value);
-      }
-    });
+  const originalTitle = document.title;
+  document.title = filename;
 
-    // 印刷用のスタイルを一時的に付与
-    container.classList.add('safari-pdf-mode');
-    
-    const opt = {
-      margin:       0,
-      filename:     filename + '.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    
-    // PDFを生成して保存
-    html2pdf().set(opt).from(container).save().then(() => {
-      container.classList.remove('safari-pdf-mode'); // 生成が終わったら元に戻す
-    });
+  const container = document.querySelector('.print-container');
+  const clone = container.cloneNode(true);
+  clone.id = 'print-clone';
+  document.body.appendChild(clone);
 
-  } else {
-    // Chrome等（従来のアプローチ）
-    const originalTitle = document.title;
-    document.title = filename;
+  window.print();
 
-    const container = document.querySelector('.print-container');
-    const clone = container.cloneNode(true);
-    clone.id = 'print-clone';
-    document.body.appendChild(clone);
-
-    window.print();
-
-    document.title = originalTitle;
-    clone.remove();
-  }
+  document.title = originalTitle;
+  clone.remove();
 });
 
 document.getElementById('loadBtn').addEventListener('change', (event) => {

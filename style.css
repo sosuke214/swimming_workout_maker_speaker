@@ -57,7 +57,6 @@ input[type="number"] { -moz-appearance: textfield; }
 .countdown-item input[type="date"] { border: none; font-size: 9px; width: 75px; background: transparent; }
 .days-left { font-size: 11px; font-weight: bold; color: #d32f2f; white-space: nowrap; }
 
-/* 元のChrome用印刷設定 */
 @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   @page { size: A4 portrait; margin: 0; }
@@ -77,19 +76,3 @@ input[type="number"] { -moz-appearance: textfield; }
   input[data-rest="00:00"], input[data-rest=""] { visibility: hidden !important; }
 }
 
-/* Safari用 html2pdf専用の一時スタイル */
-.safari-pdf-mode {
-  width: 210mm !important;
-  background-color: #fff !important;
-  padding: 4mm 6mm !important;
-  box-sizing: border-box !important;
-}
-.safari-pdf-mode .no-print, 
-.safari-pdf-mode button, 
-.safari-pdf-mode input[type="file"] {
-  display: none !important;
-}
-.safari-pdf-mode input[data-rest="00:00"], 
-.safari-pdf-mode input[data-rest=""] {
-  visibility: hidden !important;
-}
