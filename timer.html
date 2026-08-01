@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>水泳タイマーアプリ</title>
+  <link rel="stylesheet" href="timer.css">
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js').then(function(registration) {
+          console.log('ServiceWorker registration successful');
+        }, function(err) {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+  </script> 
+</head>
+<body>
+
+  <!-- トップ画面 -->
+  <div id="setup-screen" class="screen active">
+    <h1>メニュー読み込み</h1>
+    <p>メニュー作成アプリで保存した「.json」ファイルを選択してください。</p>
+    <input type="file" id="json-loader" accept=".json">
+    <div id="file-info"></div>
+    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+      <button id="go-audio-settings-btn" class="btn secondary">⚙ 音声設定</button>
+      <button id="start-app-btn" class="btn primary" disabled>タイマー画面へ</button>
+    </div>
+  </div>
+
+  <!-- 音声設定画面 -->
+  <div id="audio-setup-screen" class="screen">
+    <div class="top-bar">
+      <button id="back-to-setup-btn" class="btn secondary">⬅ 戻る</button>
+      <div id="progress-text" style="color:#fff;">音声設定</div>
+    </div>
+    <div class="settings-container">
+      <h3>読み上げ音声の選択</h3>
+      <p style="font-size: 12px; color: #aaa; margin-top: -10px; margin-bottom: 20px;">
+        使用する音声を選択してください。新しく追加することも可能です。
+      </p>
+      
+      <div id="profile-list" class="setting-group">
+        <!-- JSで動的にリストを生成 -->
+      </div>
+
+      <button id="open-record-modal-btn" class="btn primary" style="width: 100%; margin-top: 10px;">＋ 新しい音声を録音する</button>
+    </div>
+  </div>
+
+  <!-- 録音用モーダル -->
+  <div id="record-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h2>新規音声の録音</h2>
+      <p style="font-size: 12px; color: #ccc;">
+        針が40秒から動き出します。50で「10秒前」、55で「5秒前」、トップで「はい」と発声してください。<br>
+        <span style="color:#4fc3f7;">※トップ通過後、2秒間録音が継続します。</span>
+      </p>
+      
+      <!-- ペースクロック -->
+      <div class="pace-clock">
+        <div class="clock-center"></div>
+        <!-- 目盛り -->
+        <div class="tick" style="transform: rotate(0deg); color: #ffeb3b; font-weight: bold;"><div style="transform: rotate(0deg)">0</div></div>
+        <div class="tick" style="transform: rotate(240deg); color: #aaa;"><div style="transform: rotate(-240deg)">40</div></div>
+        <div class="tick" style="transform: rotate(300deg); color: #fff;"><div style="transform: rotate(-300deg)">50</div></div>
+        <div class="tick" style="transform: rotate(330deg); color: #ff5252;"><div style="transform: rotate(-330deg)">55</div></div>
+        <!-- 針 -->
+        <div id="clock-hand" class="clock-hand"></div>
+      </div>
+
+      <div id="record-status" style="margin: 15px 0; font-weight: bold; color: #4fc3f7;">待機中...</div>
+      
+      <button id="start-record-btn" class="btn huge-btn" style="width: 100%; margin-bottom: 15px;">録音開始 (22秒間)</button>
+      
+      <div id="save-section" style="display: none; text-align: left;">
+        <audio id="preview-audio" controls style="width: 100%; height: 35px; margin-bottom: 10px;"></audio>
+        <input type="text" id="profile-name" placeholder="音声の名前 (例: 田中コーチ)" style="width: 100%; padding: 10px; border-radius: 5px; border: none; margin-bottom: 15px; font-size: 16px;">
+        <button id="save-profile-btn" class="btn primary" style="width: 100%; background-color: #4caf50;">保存してリストに追加</button>
+      </div>
+
+      <button id="close-record-modal-btn" class="btn secondary" style="width: 100%; margin-top: 15px; background: #555;">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- タイマー画面 -->
+  <div id="timer-screen" class="screen">
+    <div class="top-bar">
+      <button id="back-btn" class="btn secondary">⬅ 戻る</button>
+      <div id="progress-text-timer">準備完了</div>
+    </div>
+    
+    <div class="main-display">
+      <div id="current-title" class="menu-title">--</div>
+      <div id="current-detail" class="menu-detail">--</div>
+      
+      <div id="time-display" class="time-huge">00:00</div>
+    </div>
+
+    <div class="next-display">
+      <span class="next-label">NEXT:</span>
+      <span id="next-title">--</span>
+    </div>
+
+    <div class="controls">
+      <button id="prev-btn" class="btn icon-btn">⏮ 前へ</button>
+      <button id="play-pause-btn" class="btn huge-btn">▶ スタート</button>
+      <button id="next-btn" class="btn icon-btn">次へ ⏭</button>
+    </div>
+  </div>
+
+  <!-- 録音再生用の隠しプレイヤー -->
+  <audio id="custom-audio-player" playsinline style="display: none;"></audio>
+
+  <script src="timer.js"></script>
+</body>
+</html>
