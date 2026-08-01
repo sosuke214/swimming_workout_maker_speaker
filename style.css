@@ -57,78 +57,39 @@ input[type="number"] { -moz-appearance: textfield; }
 .countdown-item input[type="date"] { border: none; font-size: 9px; width: 75px; background: transparent; }
 .days-left { font-size: 11px; font-weight: bold; color: #d32f2f; white-space: nowrap; }
 
-
-
-/* ==========================================
-   印刷用スタイル（究極のSafari対策版）
-   ========================================== */
+/* 元のChrome用印刷設定 */
 @media print {
-  /* ページ設定 */
-  @page {
-    size: A4 portrait;
-    margin: 8mm;
-  }
-
-  /* Safariの高さ制限・クリッピング（見切れ）を全要素で強制解除 */
-  * {
-    overflow: visible !important;
-  }
-
-  html, body {
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
-    width: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    display: block !important;
-    position: static !important;
-    background: #fff !important;
-    color: #000 !important;
-  }
-
-  /* 画面用のレイアウト枠（Flex等）を徹底的にブロック化してバグを防ぐ */
-  .container, .main-layout, .menu-wrapper, body > div {
-    display: block !important;
-    height: auto !important;
-    max-height: none !important;
-    position: static !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* UI要素を消去 */
-  .no-print, button, input[type="file"], header, nav {
-    display: none !important;
-  }
-
-  /* SafariのFlexboxバグを回避し、floatで強制的に2分割を作る */
-  .two-column-print {
-    display: block !important;
-    width: 100% !important;
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @page { size: A4 portrait; margin: 0; }
+  body { margin: 0; padding: 0; }
+  
+  .print-container, #print-clone {
+    height: 148.5mm; width: 210mm; box-sizing: border-box; padding: 4mm 6mm; page-break-inside: avoid; overflow: hidden;
   }
   
-  .two-column-print > div {
-    float: left !important;
-    width: 48% !important;
-    margin-right: 4% !important;
-  }
+  #print-clone { border-top: 1px dashed #999; }
+  .no-print, button, input[type="file"] { display: none !important; }
   
-  .two-column-print > div:last-child {
-    margin-right: 0 !important;
-  }
-  
-  /* floatの解除（テーブルの崩れ防止） */
-  .two-column-print::after {
-    content: "";
-    display: block;
-    clear: both;
-  }
+  select { -webkit-appearance: none; appearance: none; border: none !important; background: transparent !important; }
+  input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator { display: none !important; -webkit-appearance: none; }
+  input[type="date"] { -webkit-appearance: none; appearance: none; }
 
-  /* 途中での不自然な改ページを防ぐ */
-  table, .menu-block, .section-card, tr, td, th {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
+  input[data-rest="00:00"], input[data-rest=""] { visibility: hidden !important; }
+}
+
+/* Safari用 html2pdf専用の一時スタイル */
+.safari-pdf-mode {
+  width: 210mm !important;
+  background-color: #fff !important;
+  padding: 4mm 6mm !important;
+  box-sizing: border-box !important;
+}
+.safari-pdf-mode .no-print, 
+.safari-pdf-mode button, 
+.safari-pdf-mode input[type="file"] {
+  display: none !important;
+}
+.safari-pdf-mode input[data-rest="00:00"], 
+.safari-pdf-mode input[data-rest=""] {
+  visibility: hidden !important;
 }
