@@ -1,3 +1,5 @@
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxz_hWX9qqMsF-KijdrLCb2mQIe5-6o__hyMsO_pyLiKOtGS2O24RCPNSQXL_DUhoIP/exec';
+
 let menuData = Array.from({ length: 20 }, () => ({
   type: 'swim', work: '', dis: '', rep: '', set: '', interval: '01:00', note: '', sys: '', str: '', item: '', mg: '', rest: '00:00', restDisplay: 'inline',
   isVarInterval: false, varIntervals: [], groupWithNext: false
@@ -400,3 +402,35 @@ document.getElementById('loadBtn').addEventListener('change', (event) => {
 pushHistory();
 renderTable();
 updateCountdown();
+
+document.getElementById('cloudSaveBtn').addEventListener('click', () => {
+  const filename = getFileName();
+  if(!filename) return;
+
+  const payload = {
+    date: document.getElementById('menuDate').value,
+    title: filename,
+    jsonMenu: JSON.stringify(menuData)
+  };
+
+  const btn = document.getElementById('cloudSaveBtn');
+  btn.innerText = '保存中...';
+  btn.disabled = true;
+
+  // GASへデータを送信
+  fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  .then(response => response.json())
+  .then(data => {
+    alert('クラウドに保存しました！');
+    btn.innerText = 'クラウド保存';
+    btn.disabled = false;
+  })
+  .catch(error => {
+    alert('エラーが発生しました: ' + error);
+    btn.innerText = 'クラウド保存';
+    btn.disabled = false;
+  });
+});

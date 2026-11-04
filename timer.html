@@ -23,9 +23,18 @@
   <!-- トップ画面 -->
   <div id="setup-screen" class="screen active">
     <h1>メニュー読み込み</h1>
-    <p>メニュー作成アプリで保存した「.json」ファイルを選択してください。</p>
-    <input type="file" id="json-loader" accept=".json">
-    <div id="file-info"></div>
+    
+    <!-- クラウドから読み込む部分 -->
+    <div style="background: #222; padding: 15px; border-radius: 8px; margin-bottom: 20px; width: 90%; max-width: 400px;">
+      <button id="fetch-cloud-btn" class="btn primary" style="width:100%;">☁ クラウドからメニューを取得</button>
+      <select id="cloud-menu-select" style="display:none; width:100%; margin-top:10px; padding:10px; font-size:16px; border-radius:5px;"></select>
+    </div>
+
+    <p style="color: #aaa; font-size: 12px;">または、ローカルのJSONファイルを選択</p>
+    <input type="file" id="json-loader" accept=".json" style="font-size: 14px; margin-bottom: 10px;">
+    
+    <div id="file-info" style="color: #aed581; font-weight: bold;"></div>
+    
     <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
       <button id="go-audio-settings-btn" class="btn secondary">⚙ 音声設定</button>
       <button id="start-app-btn" class="btn primary" disabled>タイマー画面へ</button>

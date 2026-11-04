@@ -1,3 +1,6 @@
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxz_hWX9qqMsF-KijdrLCb2mQIe5-6o__hyMsO_pyLiKOtGS2O24RCPNSQXL_DUhoIP/exec';
+let fetchedCloudMenus = []; // 取得したメニューデータを保持する配列
+
 // --- Web Audio API の初期化 ---
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
@@ -228,6 +231,55 @@ let remainingSec = 0;
 let currentEndTime = 0;
 let timerInterval = null;
 let customAudioPlayedForCurrentEvent = false;
+
+
+
+// === timer.js の中盤にある「document.getElementById('json-loader').addEventListener...」の【直前】あたりに以下を追加 ===
+document.getElementById('fetch-cloud-btn').addEventListener('click', () => {
+  const btn = document.getElementById('fetch-cloud-btn');
+  btn.innerText = '取得中...';
+  btn.disabled = true;
+
+  fetch(GAS_URL)
+    .then(response => response.json())
+    .then(data => {
+      fetchedCloudMenus = data;
+      const select = document.getElementById('cloud-menu-select');
+      select.innerHTML = '<option value="">メニューを選択してください</option>';
+      
+      data.forEach((item, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        // 日付形式を見やすくしてタイトルと結合
+        const dateStr = new Date(item.date).toLocaleDateString('ja-JP');
+        option.textContent = `${dateStr} - ${item.title}`;
+        select.appendChild(option);
+      });
+      
+      select.style.display = 'block';
+      btn.innerText = '☁ クラウドから再取得';
+      btn.disabled = false;
+    })
+    .catch(error => {
+      alert('取得エラー: ' + error);
+      btn.innerText = '☁ クラウドからメニューを取得';
+      btn.disabled = false;
+    });
+});
+
+document.getElementById('cloud-menu-select').addEventListener('change', (e) => {
+  const index = e.target.value;
+  if (index === "") return;
+  
+  const selectedData = fetchedCloudMenus[index];
+  const menuData = JSON.parse(selectedData.jsonMenu);
+  
+  buildTimeline(menuData);
+  document.getElementById('file-info').innerText = `読込成功: ${selectedData.title}`;
+  document.getElementById('start-app-btn').disabled = false;
+});
+
+
 
 document.getElementById('json-loader').addEventListener('change', (e) => {
   const file = e.target.files[0];

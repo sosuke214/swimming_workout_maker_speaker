@@ -27,8 +27,12 @@
       <button onclick="redo()" style="padding: 4px 10px; cursor: pointer; font-weight: bold; margin-left: 5px;">やり直す ➡</button>
     </div>
     <div>
+      
+      <!-- 修正後（クラウド保存ボタンを間に追加） -->
       <button id="saveBtn" style="padding: 4px 10px; cursor: pointer; font-weight: bold;">ファイル保存(.json)</button>
+      <button id="cloudSaveBtn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #4caf50; color: white; margin-left: 5px;">クラウド保存</button>
       <button id="pdfBtn" style="padding: 4px 10px; cursor: pointer; font-weight: bold; background: #d32f2f; color: white; margin-left: 5px;">PDFダウンロード</button>
+      
       <span style="margin-left: 15px; font-size: 11px;">読込:</span>
       <input type="file" id="loadBtn" accept=".json">
     </div>
