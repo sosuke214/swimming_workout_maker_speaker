@@ -1,7 +1,7 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxz_hWX9qqMsF-KijdrLCb2mQIe5-6o__hyMsO_pyLiKOtGS2O24RCPNSQXL_DUhoIP/exec';
 
 let menuData = Array.from({ length: 20 }, () => ({
-  type: 'swim', work: '', dis: '', rep: '', set: '', interval: '01:00', note: '', sys: '', str: '', item: '', mg: '', rest: '00:00', restDisplay: 'inline',
+  type: 'swim', work: '', dis: '', rep: '', set: '', interval: '00:00', note: '', sys: '', str: '', item: '', mg: '', rest: '00:00', restDisplay: 'inline',
   isVarInterval: false, varIntervals: [], groupWithNext: false
 }));
 
@@ -353,7 +353,7 @@ document.getElementById('menuDate').addEventListener('change', updateCountdown);
 document.querySelectorAll('.countdown-box input[type="date"]').forEach(el => el.addEventListener('change', updateCountdown));
 
 document.getElementById('addRowBtn').addEventListener('click', () => {
-  menuData.push({ type: 'swim', work: '', dis: '', rep: '', set: '', interval: '01:00', note: '', sys: '', str: '', item: '', mg: '', rest: '00:00', restDisplay: 'inline', isVarInterval: false, varIntervals: [], groupWithNext: false });
+  menuData.push({ type: 'swim', work: '', dis: '', rep: '', set: '', interval: '00:00', note: '', sys: '', str: '', item: '', mg: '', rest: '00:00', restDisplay: 'inline', isVarInterval: false, varIntervals: [], groupWithNext: false });
   pushHistory();
   renderTable();
 });

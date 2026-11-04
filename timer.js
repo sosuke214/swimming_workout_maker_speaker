@@ -57,7 +57,10 @@ function renderAudioSettings() {
     html += `
       <div class="profile-item">
         <label><input type="radio" name="audioMode" value="${p.id}" ${audioSettings.mode === p.id ? 'checked' : ''}> 録音: ${p.name}</label>
-        <button class="delete-btn" onclick="deleteProfile('${p.id}')">削除</button>
+        <div>
+          <button class="btn secondary" style="padding: 4px 8px; font-size: 12px; margin-right: 5px;" onclick="previewProfile('${p.id}')">▶ 試聴</button>
+          <button class="delete-btn" onclick="deleteProfile('${p.id}')">削除</button>
+        </div>
       </div>
     `;
   });
@@ -69,6 +72,15 @@ function renderAudioSettings() {
       saveProfiles();
     });
   });
+}
+
+// 試聴用の関数を追加
+window.previewProfile = function(id) {
+  const p = audioProfiles.find(x => x.id === id);
+  if (p && p.base64) {
+    const audio = new Audio(p.base64);
+    audio.play().catch(e => console.log("プレビュー再生エラー:", e));
+  }
 }
 
 window.deleteProfile = function(id) {
