@@ -469,22 +469,27 @@ function startTimer() {
       }
     }
     
+    // 【修正】残り0秒になった瞬間、即座に次のイベントへ切り替えるのではなく、
+    // 音声の「はい」の余韻（1秒間）を最後まで鳴らし切るためにわずかに遅延させる
     if (remainingSec <= 0) {
       clearInterval(timerInterval);
       
       if (audioSettings.mode === 'tts') speakTTS("はい");
       
-      currentIndex++;
-      customAudioPlayedForCurrentEvent = false; 
-      loadEvent(currentIndex);
-      if (currentIndex < timeline.length) {
-        startTimer();
-      } else {
-        pauseTimer();
-      }
+      // 音声の「い」が途切れないよう、1.2秒だけ待ってから次のメニューへ進む
+      setTimeout(() => {
+        currentIndex++;
+        customAudioPlayedForCurrentEvent = false; 
+        loadEvent(currentIndex);
+        if (currentIndex < timeline.length) {
+          startTimer();
+        } else {
+          pauseTimer();
+        }
+      }, 1200); // 1200ミリ秒（1.2秒）の余韻を持たせる
     }
   }, 100);
-}
+    
 
 function speakTTS(text) {
   if (!('speechSynthesis' in window)) return;
