@@ -1,13 +1,17 @@
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxz_hWX9qqMsF-KijdrLCb2mQIe5-6o__hyMsO_pyLiKOtGS2O24RCPNSQXL_DUhoIP/exec';
-let fetchedCloudMenus = []; // 取得したメニューデータを保持する配列
+// === ここのコードに新しい音声を書き足すだけで追加される ===
+const SHARED_VOICES = [
+  { id: 'shared_voice1', name: '共有音声1 (紅林1)', file: 'voice1.mp3' },
+  { id: 'shared_voice2', name: '共有音声2 (未登録)', file: 'voice2.mp3' }
+];
 
-// --- Web Audio API の初期化 ---
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxz_hWX9qqMsF-KijdrLCb2mQIe5-6o__hyMsO_pyLiKOtGS2O24RCPNSQXL_DUhoIP/exec';
+let fetchedCloudMenus = [];
+
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
-let customAudioBuffer = null; // メモリに展開した音声データ
-let currentAudioSource = null; // 現在再生中の音源ノード
+let customAudioBuffer = null;
+let currentAudioSource = null;
 
-// --- 音声プロファイル管理 ---
 let audioProfiles = [];
 let audioSettings = { mode: 'tts' };
 
@@ -21,25 +25,20 @@ function saveProfiles() {
   localStorage.setItem('swimTimerSettings', JSON.stringify(audioSettings));
 }
 
-// Base64をArrayBufferに変換する関数
 function base64ToArrayBuffer(base64) {
   const binaryString = window.atob(base64.split(',')[1]);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
+  for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
   return bytes.buffer;
 }
 
-// メモリに音声を展開（デコード）する処理
 async function loadCustomAudioToMemory(base64) {
   try {
     const arrayBuffer = base64ToArrayBuffer(base64);
     customAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-    console.log("音声のメモリ展開完了");
   } catch (e) {
-    console.error("音声のデコードに失敗:", e);
+    console.error("デコード失敗:", e);
   }
 }
 
@@ -53,6 +52,19 @@ function renderAudioSettings() {
     </div>
   `;
   
+  // 共有音声リストから動的に生成
+  SHARED_VOICES.forEach(sv => {
+    html += `
+      <div class="profile-item">
+        <label><input type="radio" name="audioMode" value="${sv.id}" ${audioSettings.mode === sv.id ? 'checked' : ''}> ☁️ ${sv.name}</label>
+        <div>
+          <button class="btn secondary" style="padding: 4px 8px; font-size: 12px;" onclick="previewSharedVoice('${sv.file}')">▶ 試聴</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  // ローカル録音音声
   audioProfiles.forEach(p => {
     html += `
       <div class="profile-item">
@@ -74,13 +86,17 @@ function renderAudioSettings() {
   });
 }
 
-// 試聴用の関数を追加
 window.previewProfile = function(id) {
   const p = audioProfiles.find(x => x.id === id);
   if (p && p.base64) {
     const audio = new Audio(p.base64);
-    audio.play().catch(e => console.log("プレビュー再生エラー:", e));
+    audio.play().catch(e => console.log("再生エラー:", e));
   }
+}
+
+window.previewSharedVoice = function(fileName) {
+  const audio = new Audio(fileName);
+  audio.play().catch(e => alert(`ファイルが見つかりません。GitHubに ${fileName} を配置してください。`));
 }
 
 window.deleteProfile = function(id) {
@@ -101,7 +117,6 @@ document.getElementById('back-to-setup-btn').addEventListener('click', () => {
   document.getElementById('setup-screen').classList.add('active');
 });
 
-// --- 録音機能 (Web Audio & MediaRecorder) ---
 let recordStream = null;
 let mediaRecorder = null;
 let audioChunks = [];
@@ -112,7 +127,6 @@ document.getElementById('open-record-modal-btn').addEventListener('click', () =>
   document.getElementById('record-modal').style.display = 'flex';
   resetRecordModal();
 });
-
 document.getElementById('close-record-modal-btn').addEventListener('click', () => {
   if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
   if (recordStream) recordStream.getTracks().forEach(t => t.stop());
@@ -133,7 +147,7 @@ document.getElementById('start-record-btn').addEventListener('click', async () =
   try {
     recordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (err) {
-    alert("マイクへのアクセスが拒否されたか、利用できません。設定を確認してください。");
+    alert("マイクへのアクセスが拒否されました。");
     return;
   }
   
@@ -198,21 +212,12 @@ document.getElementById('save-profile-btn').addEventListener('click', () => {
   document.getElementById('record-modal').style.display = 'none';
 });
 
-// --- カスタム音声のメモリ再生処理 ---
 function playWebAudio(offsetSec) {
   if (!customAudioBuffer) return;
-  
-  // 既に鳴っている音があれば止める
-  if (currentAudioSource) {
-    currentAudioSource.stop();
-  }
-  
-  // 新しい音源ノードを作成してメモリのバッファをセット
+  if (currentAudioSource) currentAudioSource.stop();
   currentAudioSource = audioCtx.createBufferSource();
   currentAudioSource.buffer = customAudioBuffer;
   currentAudioSource.connect(audioCtx.destination);
-  
-  // 指定秒数（offsetSec）から再生開始
   currentAudioSource.start(0, offsetSec);
 }
 
@@ -223,7 +228,6 @@ function stopWebAudio() {
   }
 }
 
-// --- タイマー処理 ---
 function timeToSeconds(timeStr) {
   if (!timeStr || !timeStr.includes(':')) return 0;
   const [min, sec] = timeStr.split(':').map(Number);
@@ -244,9 +248,6 @@ let currentEndTime = 0;
 let timerInterval = null;
 let customAudioPlayedForCurrentEvent = false;
 
-
-
-// === timer.js の中盤にある「document.getElementById('json-loader').addEventListener...」の【直前】あたりに以下を追加 ===
 document.getElementById('fetch-cloud-btn').addEventListener('click', () => {
   const btn = document.getElementById('fetch-cloud-btn');
   btn.innerText = '取得中...';
@@ -262,7 +263,6 @@ document.getElementById('fetch-cloud-btn').addEventListener('click', () => {
       data.forEach((item, index) => {
         const option = document.createElement('option');
         option.value = index;
-        // 日付形式を見やすくしてタイトルと結合
         const dateStr = new Date(item.date).toLocaleDateString('ja-JP');
         option.textContent = `${dateStr} - ${item.title}`;
         select.appendChild(option);
@@ -282,16 +282,12 @@ document.getElementById('fetch-cloud-btn').addEventListener('click', () => {
 document.getElementById('cloud-menu-select').addEventListener('change', (e) => {
   const index = e.target.value;
   if (index === "") return;
-  
   const selectedData = fetchedCloudMenus[index];
   const menuData = JSON.parse(selectedData.jsonMenu);
-  
   buildTimeline(menuData);
   document.getElementById('file-info').innerText = `読込成功: ${selectedData.title}`;
   document.getElementById('start-app-btn').disabled = false;
 });
-
-
 
 document.getElementById('json-loader').addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -312,17 +308,24 @@ document.getElementById('start-app-btn').addEventListener('click', async () => {
   currentIndex = 0;
   customAudioPlayedForCurrentEvent = false;
   
-  // ブラウザのWeb Audioロックをユーザー操作時に解除
   if (audioCtx.state === 'suspended') {
     await audioCtx.resume();
   }
 
-  // 録音モードなら事前にメモリへ展開
-  if (audioSettings.mode !== 'tts') {
-    const p = audioProfiles.find(p => p.id === audioSettings.mode);
-    if (p) {
-      await loadCustomAudioToMemory(p.base64);
+  const sharedVoice = SHARED_VOICES.find(sv => sv.id === audioSettings.mode);
+
+  if (sharedVoice) {
+    try {
+      const response = await fetch(sharedVoice.file);
+      if (!response.ok) throw new Error("File not found");
+      const arrayBuffer = await response.arrayBuffer();
+      customAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    } catch (e) {
+      alert(`共有音声の読み込みに失敗しました。GitHubに ${sharedVoice.file} があるか確認してください。`);
     }
+  } else if (audioSettings.mode !== 'tts') {
+    const p = audioProfiles.find(p => p.id === audioSettings.mode);
+    if (p) await loadCustomAudioToMemory(p.base64);
   } else if ('speechSynthesis' in window) {
     const ut = new SpeechSynthesisUtterance("準備完了です。");
     ut.lang = 'ja-JP';
@@ -432,7 +435,6 @@ function startTimer() {
   document.getElementById('play-pause-btn').innerText = "⏸ 停止";
   document.getElementById('play-pause-btn').style.backgroundColor = "#ff9800"; 
   
-  // スタートボタン押下時にも安全のためロック解除
   if (audioCtx.state === 'suspended') audioCtx.resume();
 
   if (remainingSec <= 0 && timeline[currentIndex]) {
