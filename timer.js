@@ -489,7 +489,7 @@ function startTimer() {
       }, 1200); // 1200ミリ秒（1.2秒）の余韻を持たせる
     }
   }, 100);
-    
+}   
 
 function speakTTS(text) {
   if (!('speechSynthesis' in window)) return;
